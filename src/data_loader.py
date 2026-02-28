@@ -1,7 +1,6 @@
 import pandas as pd
 import os
 
-
 class DataLoader:
     def __init__(self, raw_data_path):
         """
@@ -10,18 +9,27 @@ class DataLoader:
         self.raw_data_path = raw_data_path
 
     def load_data(self):
-        print("Loading classes...")
         classes_file = os.path.join(self.raw_data_path, 'elliptic_txs_classes.csv')
+        features_file = os.path.join(self.raw_data_path, 'elliptic_txs_features.csv')
+
+        # --- CLOUD SAFETY BYPASS ---
+        # If we are on Streamlit Cloud, these massive files won't be here. 
+        # So we return an empty dataframe with the correct columns to prevent crashing!
+        if not os.path.exists(classes_file) or not os.path.exists(features_file):
+            print("⚠️ Cloud Environment Detected: Raw datasets not found. Returning empty dataset structure.")
+            col_names = ['txId', 'time_step'] + [f'trans_feat_{i}' for i in range(93)] + [f'agg_feat_{i}' for i in range(72)] + ['class']
+            return pd.DataFrame(columns=col_names)
+        # ---------------------------
+
+        print("Loading classes...")
         df_classes = pd.read_csv(classes_file)
 
         print("Loading features (this might take a minute)...")
-        features_file = os.path.join(self.raw_data_path, 'elliptic_txs_features.csv')
         # The features file has no headers, just raw numbers. We rename the first 2 columns.
         df_features = pd.read_csv(features_file, header=None)
 
         # Rename columns: Col 0 is txId, Col 1 is time_step
-        col_names = ['txId', 'time_step'] + [f'trans_feat_{i}' for i in range(93)] + [f'agg_feat_{i}' for i in
-                                                                                      range(72)]
+        col_names = ['txId', 'time_step'] + [f'trans_feat_{i}' for i in range(93)] + [f'agg_feat_{i}' for i in range(72)]
         df_features.columns = col_names
 
         print("Merging data...")
