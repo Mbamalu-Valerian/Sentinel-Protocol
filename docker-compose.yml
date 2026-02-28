@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  # Service Name: RAIN Sentinel
+  rain-sentinel:
+    build: .
+    container_name: sentinel_fraud_detector
+    restart: always
+    ports:
+      - "8501:8501"  # Maps port 8501 on your laptop to 8501 in the container
+    volumes:
+      - ./:/app      # Syncs your code folder so changes appear live
+    environment:
+      - APP_ENV=production
